@@ -1,0 +1,64 @@
+{{define "content"}}
+<div class="ingredients-page">
+    <div class="page-header">
+        <h2>Ingredients</h2>
+        <button class="btn btn-primary" 
+                hx-get="/ingredients/new" 
+                hx-target="#modal" 
+                hx-swap="innerHTML">
+            Add Ingredient
+        </button>
+    </div>
+    
+    <div class="search-box">
+        <input type="text" 
+               id="search-input"
+               placeholder="Search ingredients..." 
+               hx-get="/ingredients/search" 
+               hx-target="#ingredients-list" 
+               hx-trigger="keyup changed delay:300ms" 
+               hx-include="this"
+               name="search">
+    </div>
+    
+    <div id="ingredients-list">
+        {{template "ingredients-table" .Ingredients}}
+    </div>
+</div>
+
+<div id="modal" class="modal"></div>
+{{end}}
+
+{{define "ingredients-table"}}
+<div class="ingredients-table">
+    {{if .}}
+        {{range .}}
+        <div class="ingredient-row" id="ingredient-{{.ID}}">
+            <div class="ingredient-info">
+                <strong>{{.Name}}</strong>
+                <small>Created: {{.CreatedAt.Format "Jan 2, 2006"}}</small>
+            </div>
+            <div class="ingredient-actions">
+                <button class="btn btn-sm btn-secondary" 
+                        hx-get="/ingredients/{{.ID}}/edit" 
+                        hx-target="#modal" 
+                        hx-swap="innerHTML">
+                    Edit
+                </button>
+                <button class="btn btn-sm btn-danger" 
+                        hx-delete="/ingredients/{{.ID}}" 
+                        hx-target="#ingredient-{{.ID}}" 
+                        hx-swap="outerHTML" 
+                        hx-confirm="Are you sure you want to delete {{.Name}}?">
+                    Delete
+                </button>
+            </div>
+        </div>
+        {{end}}
+    {{else}}
+        <div class="empty-state">
+            <p>No ingredients found.</p>
+        </div>
+    {{end}}
+</div>
+{{end}}

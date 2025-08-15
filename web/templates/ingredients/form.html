@@ -1,0 +1,47 @@
+{{define "ingredient-form"}}
+<div class="modal-content">
+    <div class="modal-header">
+        <h3>{{if .Ingredient}}Edit Ingredient{{else}}Add Ingredient{{end}}</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    
+    <form {{if .Ingredient}}
+            hx-put="/ingredients/{{.Ingredient.ID}}"
+          {{else}}
+            hx-post="/ingredients"
+          {{end}}
+          hx-target="#ingredients-list" 
+          hx-swap="innerHTML"
+          hx-on::after-request="closeModal()">
+        
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" 
+                   id="name" 
+                   name="name" 
+                   value="{{if .Ingredient}}{{.Ingredient.Name}}{{end}}" 
+                   required 
+                   autofocus>
+        </div>
+        
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+                {{if .Ingredient}}Update{{else}}Create{{end}}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('modal').innerHTML = '';
+}
+
+// Show modal when content is loaded
+document.getElementById('modal').style.display = 'block';
+</script>
+{{end}}

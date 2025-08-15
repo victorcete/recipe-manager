@@ -1,4 +1,4 @@
-.PHONY: build test test-verbose test-coverage fmt clean
+.PHONY: build test test-verbose test-coverage fmt clean dev
 
 # Build the project
 build:
@@ -30,3 +30,7 @@ fmt:
 clean:
 	rm -rf bin/ coverage.out coverage.html
 	go clean
+
+# Start development server
+dev: build
+	./bin/server

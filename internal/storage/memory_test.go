@@ -148,7 +148,7 @@ func TestUpdateIngredient(t *testing.T) {
 	t.Run("successful update", func(t *testing.T) {
 		newName := "updated"
 		updateReq := &models.UpdateIngredientRequest{Name: &newName}
-		
+
 		updated, err := storage.UpdateIngredient(created.ID, updateReq)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -164,7 +164,7 @@ func TestUpdateIngredient(t *testing.T) {
 	t.Run("non-existent ingredient", func(t *testing.T) {
 		newName := "test"
 		updateReq := &models.UpdateIngredientRequest{Name: &newName}
-		
+
 		_, err := storage.UpdateIngredient(999, updateReq)
 		if err != ErrIngredientNotFound {
 			t.Errorf("expected ErrIngredientNotFound, got %v", err)
@@ -179,7 +179,7 @@ func TestUpdateIngredient(t *testing.T) {
 		// Try to update first ingredient to have same name as second
 		updateReq := &models.UpdateIngredientRequest{Name: &existing.Name}
 		_, err := storage.UpdateIngredient(created.ID, updateReq)
-		
+
 		if err != ErrIngredientNameExists {
 			t.Errorf("expected ErrIngredientNameExists, got %v", err)
 		}
@@ -189,7 +189,7 @@ func TestUpdateIngredient(t *testing.T) {
 		// Should allow updating to the same name
 		sameName := created.Name
 		updateReq := &models.UpdateIngredientRequest{Name: &sameName}
-		
+
 		_, err := storage.UpdateIngredient(created.ID, updateReq)
 		if err != nil {
 			t.Errorf("should allow updating to same name, got error: %v", err)
@@ -225,7 +225,7 @@ func TestDeleteIngredient(t *testing.T) {
 
 func TestSearchIngredients(t *testing.T) {
 	storage := NewMemoryStorage()
-	
+
 	// Create test data
 	ingredients := []string{"tomato", "cherry tomato", "tomato paste", "onion", "garlic"}
 	for _, name := range ingredients {
@@ -255,7 +255,7 @@ func TestSearchIngredients(t *testing.T) {
 		if len(results) != 3 {
 			t.Errorf("expected 3 results for 'tomato', got %d", len(results))
 		}
-		
+
 		// Should be sorted alphabetically by name
 		expectedOrder := []string{"cherry tomato", "tomato", "tomato paste"}
 		for i, result := range results {
@@ -298,10 +298,10 @@ func TestSearchIngredients(t *testing.T) {
 
 func TestConcurrentAccess(t *testing.T) {
 	storage := NewMemoryStorage()
-	
+
 	// Test concurrent reads and writes
 	done := make(chan bool)
-	
+
 	// Concurrent writers
 	go func() {
 		for i := 0; i < 100; i++ {
@@ -310,7 +310,7 @@ func TestConcurrentAccess(t *testing.T) {
 		}
 		done <- true
 	}()
-	
+
 	// Concurrent readers
 	go func() {
 		for i := 0; i < 100; i++ {
@@ -318,17 +318,17 @@ func TestConcurrentAccess(t *testing.T) {
 		}
 		done <- true
 	}()
-	
+
 	// Wait for both goroutines
 	<-done
 	<-done
-	
+
 	// Verify final state
 	ingredients, err := storage.GetAllIngredients()
 	if err != nil {
 		t.Fatalf("unexpected error after concurrent access: %v", err)
 	}
-	
+
 	// Should have some ingredients (exact count may vary due to duplicates)
 	if len(ingredients) == 0 {
 		t.Error("expected some ingredients after concurrent writes")
