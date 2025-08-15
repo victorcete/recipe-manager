@@ -18,19 +18,19 @@ func TestCreateIngredient(t *testing.T) {
 	t.Run("successful creation", func(t *testing.T) {
 		req := models.CreateIngredientRequest{Name: "tomato"}
 		body, _ := json.Marshal(req)
-		
+
 		r := httptest.NewRequest(http.MethodPost, "/api/ingredients", bytes.NewReader(body))
 		w := httptest.NewRecorder()
-		
+
 		handler.CreateIngredient(w, r)
-		
+
 		if w.Code != http.StatusCreated {
 			t.Errorf("expected status %d, got %d", http.StatusCreated, w.Code)
 		}
-		
+
 		var ingredient models.Ingredient
 		json.Unmarshal(w.Body.Bytes(), &ingredient)
-		
+
 		if ingredient.Name != "tomato" {
 			t.Errorf("expected name 'tomato', got '%s'", ingredient.Name)
 		}
@@ -42,9 +42,9 @@ func TestCreateIngredient(t *testing.T) {
 	t.Run("invalid method", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients", nil)
 		w := httptest.NewRecorder()
-		
+
 		handler.CreateIngredient(w, r)
-		
+
 		if w.Code != http.StatusMethodNotAllowed {
 			t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, w.Code)
 		}
@@ -53,9 +53,9 @@ func TestCreateIngredient(t *testing.T) {
 	t.Run("invalid JSON", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "/api/ingredients", bytes.NewReader([]byte("invalid json")))
 		w := httptest.NewRecorder()
-		
+
 		handler.CreateIngredient(w, r)
-		
+
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
 		}
@@ -64,12 +64,12 @@ func TestCreateIngredient(t *testing.T) {
 	t.Run("empty name", func(t *testing.T) {
 		req := models.CreateIngredientRequest{Name: "   "}
 		body, _ := json.Marshal(req)
-		
+
 		r := httptest.NewRequest(http.MethodPost, "/api/ingredients", bytes.NewReader(body))
 		w := httptest.NewRecorder()
-		
+
 		handler.CreateIngredient(w, r)
-		
+
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
 		}
@@ -82,14 +82,14 @@ func TestCreateIngredient(t *testing.T) {
 		r1 := httptest.NewRequest(http.MethodPost, "/api/ingredients", bytes.NewReader(body1))
 		w1 := httptest.NewRecorder()
 		handler.CreateIngredient(w1, r1)
-		
+
 		// Try to create duplicate
 		req2 := models.CreateIngredientRequest{Name: "onion"}
 		body2, _ := json.Marshal(req2)
 		r2 := httptest.NewRequest(http.MethodPost, "/api/ingredients", bytes.NewReader(body2))
 		w2 := httptest.NewRecorder()
 		handler.CreateIngredient(w2, r2)
-		
+
 		if w2.Code != http.StatusConflict {
 			t.Errorf("expected status %d, got %d", http.StatusConflict, w2.Code)
 		}
@@ -99,7 +99,7 @@ func TestCreateIngredient(t *testing.T) {
 func TestGetIngredient(t *testing.T) {
 	storage := storage.NewMemoryStorage()
 	handler := NewIngredientHandler(storage)
-	
+
 	// Create test ingredient
 	req := &models.CreateIngredientRequest{Name: "pepper"}
 	ingredient, _ := storage.CreateIngredient(req)
@@ -108,16 +108,16 @@ func TestGetIngredient(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients/1", nil)
 		r.URL.Path = "/api/ingredients/1"
 		w := httptest.NewRecorder()
-		
+
 		handler.GetIngredient(w, r)
-		
+
 		if w.Code != http.StatusOK {
 			t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
 		}
-		
+
 		var result models.Ingredient
 		json.Unmarshal(w.Body.Bytes(), &result)
-		
+
 		if result.ID != ingredient.ID {
 			t.Errorf("expected ID %d, got %d", ingredient.ID, result.ID)
 		}
@@ -129,9 +129,9 @@ func TestGetIngredient(t *testing.T) {
 	t.Run("invalid method", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPost, "/api/ingredients/1", nil)
 		w := httptest.NewRecorder()
-		
+
 		handler.GetIngredient(w, r)
-		
+
 		if w.Code != http.StatusMethodNotAllowed {
 			t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, w.Code)
 		}
@@ -141,9 +141,9 @@ func TestGetIngredient(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients/invalid", nil)
 		r.URL.Path = "/api/ingredients/invalid"
 		w := httptest.NewRecorder()
-		
+
 		handler.GetIngredient(w, r)
-		
+
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
 		}
@@ -153,9 +153,9 @@ func TestGetIngredient(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients/999", nil)
 		r.URL.Path = "/api/ingredients/999"
 		w := httptest.NewRecorder()
-		
+
 		handler.GetIngredient(w, r)
-		
+
 		if w.Code != http.StatusNotFound {
 			t.Errorf("expected status %d, got %d", http.StatusNotFound, w.Code)
 		}
@@ -165,16 +165,16 @@ func TestGetIngredient(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients/", nil)
 		r.URL.Path = "/api/ingredients/"
 		w := httptest.NewRecorder()
-		
+
 		handler.GetIngredient(w, r)
-		
+
 		if w.Code != http.StatusOK {
 			t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
 		}
-		
+
 		var ingredients []models.Ingredient
 		json.Unmarshal(w.Body.Bytes(), &ingredients)
-		
+
 		if len(ingredients) == 0 {
 			t.Error("expected at least one ingredient")
 		}
@@ -184,7 +184,7 @@ func TestGetIngredient(t *testing.T) {
 func TestGetAllIngredients(t *testing.T) {
 	storage := storage.NewMemoryStorage()
 	handler := NewIngredientHandler(storage)
-	
+
 	// Create test ingredients
 	names := []string{"apple", "banana", "cherry"}
 	for _, name := range names {
@@ -195,16 +195,16 @@ func TestGetAllIngredients(t *testing.T) {
 	t.Run("get all without search", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients", nil)
 		w := httptest.NewRecorder()
-		
+
 		handler.GetAllIngredients(w, r)
-		
+
 		if w.Code != http.StatusOK {
 			t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
 		}
-		
+
 		var ingredients []models.Ingredient
 		json.Unmarshal(w.Body.Bytes(), &ingredients)
-		
+
 		if len(ingredients) != 3 {
 			t.Errorf("expected 3 ingredients, got %d", len(ingredients))
 		}
@@ -213,21 +213,21 @@ func TestGetAllIngredients(t *testing.T) {
 	t.Run("search with query", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients?search=a", nil)
 		w := httptest.NewRecorder()
-		
+
 		handler.GetAllIngredients(w, r)
-		
+
 		if w.Code != http.StatusOK {
 			t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
 		}
-		
+
 		var ingredients []models.Ingredient
 		json.Unmarshal(w.Body.Bytes(), &ingredients)
-		
+
 		// Should match "apple" and "banana"
 		if len(ingredients) != 2 {
 			t.Errorf("expected 2 ingredients matching 'a', got %d", len(ingredients))
 		}
-		
+
 		// Results should be sorted alphabetically
 		if ingredients[0].Name != "apple" {
 			t.Errorf("expected first result to be 'apple', got '%s'", ingredients[0].Name)
@@ -240,16 +240,16 @@ func TestGetAllIngredients(t *testing.T) {
 	t.Run("search with no matches", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients?search=xyz", nil)
 		w := httptest.NewRecorder()
-		
+
 		handler.GetAllIngredients(w, r)
-		
+
 		if w.Code != http.StatusOK {
 			t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
 		}
-		
+
 		var ingredients []models.Ingredient
 		json.Unmarshal(w.Body.Bytes(), &ingredients)
-		
+
 		if len(ingredients) != 0 {
 			t.Errorf("expected 0 ingredients for 'xyz', got %d", len(ingredients))
 		}
@@ -259,7 +259,7 @@ func TestGetAllIngredients(t *testing.T) {
 func TestUpdateIngredient(t *testing.T) {
 	storage := storage.NewMemoryStorage()
 	handler := NewIngredientHandler(storage)
-	
+
 	// Create test ingredient
 	req := &models.CreateIngredientRequest{Name: "original"}
 	ingredient, _ := storage.CreateIngredient(req)
@@ -268,20 +268,20 @@ func TestUpdateIngredient(t *testing.T) {
 		newName := "updated"
 		updateReq := models.UpdateIngredientRequest{Name: &newName}
 		body, _ := json.Marshal(updateReq)
-		
+
 		r := httptest.NewRequest(http.MethodPut, "/api/ingredients/1", bytes.NewReader(body))
 		r.URL.Path = "/api/ingredients/1"
 		w := httptest.NewRecorder()
-		
+
 		handler.UpdateIngredient(w, r)
-		
+
 		if w.Code != http.StatusOK {
 			t.Errorf("expected status %d, got %d", http.StatusOK, w.Code)
 		}
-		
+
 		var result models.Ingredient
 		json.Unmarshal(w.Body.Bytes(), &result)
-		
+
 		if result.Name != "updated" {
 			t.Errorf("expected name 'updated', got '%s'", result.Name)
 		}
@@ -290,9 +290,9 @@ func TestUpdateIngredient(t *testing.T) {
 	t.Run("invalid method", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients/1", nil)
 		w := httptest.NewRecorder()
-		
+
 		handler.UpdateIngredient(w, r)
-		
+
 		if w.Code != http.StatusMethodNotAllowed {
 			t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, w.Code)
 		}
@@ -301,13 +301,13 @@ func TestUpdateIngredient(t *testing.T) {
 	t.Run("invalid ID", func(t *testing.T) {
 		updateReq := models.UpdateIngredientRequest{Name: &ingredient.Name}
 		body, _ := json.Marshal(updateReq)
-		
+
 		r := httptest.NewRequest(http.MethodPut, "/api/ingredients/invalid", bytes.NewReader(body))
 		r.URL.Path = "/api/ingredients/invalid"
 		w := httptest.NewRecorder()
-		
+
 		handler.UpdateIngredient(w, r)
-		
+
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
 		}
@@ -317,9 +317,9 @@ func TestUpdateIngredient(t *testing.T) {
 		r := httptest.NewRequest(http.MethodPut, "/api/ingredients/1", bytes.NewReader([]byte("invalid")))
 		r.URL.Path = "/api/ingredients/1"
 		w := httptest.NewRecorder()
-		
+
 		handler.UpdateIngredient(w, r)
-		
+
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
 		}
@@ -329,13 +329,13 @@ func TestUpdateIngredient(t *testing.T) {
 		emptyName := "   "
 		updateReq := models.UpdateIngredientRequest{Name: &emptyName}
 		body, _ := json.Marshal(updateReq)
-		
+
 		r := httptest.NewRequest(http.MethodPut, "/api/ingredients/1", bytes.NewReader(body))
 		r.URL.Path = "/api/ingredients/1"
 		w := httptest.NewRecorder()
-		
+
 		handler.UpdateIngredient(w, r)
-		
+
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
 		}
@@ -345,13 +345,13 @@ func TestUpdateIngredient(t *testing.T) {
 		newName := "test"
 		updateReq := models.UpdateIngredientRequest{Name: &newName}
 		body, _ := json.Marshal(updateReq)
-		
+
 		r := httptest.NewRequest(http.MethodPut, "/api/ingredients/999", bytes.NewReader(body))
 		r.URL.Path = "/api/ingredients/999"
 		w := httptest.NewRecorder()
-		
+
 		handler.UpdateIngredient(w, r)
-		
+
 		if w.Code != http.StatusNotFound {
 			t.Errorf("expected status %d, got %d", http.StatusNotFound, w.Code)
 		}
@@ -361,17 +361,17 @@ func TestUpdateIngredient(t *testing.T) {
 		// Create another ingredient
 		req2 := &models.CreateIngredientRequest{Name: "existing"}
 		existing, _ := storage.CreateIngredient(req2)
-		
+
 		// Try to update first ingredient to have same name
 		updateReq := models.UpdateIngredientRequest{Name: &existing.Name}
 		body, _ := json.Marshal(updateReq)
-		
+
 		r := httptest.NewRequest(http.MethodPut, "/api/ingredients/1", bytes.NewReader(body))
 		r.URL.Path = "/api/ingredients/1"
 		w := httptest.NewRecorder()
-		
+
 		handler.UpdateIngredient(w, r)
-		
+
 		if w.Code != http.StatusConflict {
 			t.Errorf("expected status %d, got %d", http.StatusConflict, w.Code)
 		}
@@ -381,7 +381,7 @@ func TestUpdateIngredient(t *testing.T) {
 func TestDeleteIngredient(t *testing.T) {
 	storage := storage.NewMemoryStorage()
 	handler := NewIngredientHandler(storage)
-	
+
 	// Create test ingredient
 	req := &models.CreateIngredientRequest{Name: "to_delete"}
 	_, _ = storage.CreateIngredient(req)
@@ -390,19 +390,19 @@ func TestDeleteIngredient(t *testing.T) {
 		r := httptest.NewRequest(http.MethodDelete, "/api/ingredients/1", nil)
 		r.URL.Path = "/api/ingredients/1"
 		w := httptest.NewRecorder()
-		
+
 		handler.DeleteIngredient(w, r)
-		
+
 		if w.Code != http.StatusNoContent {
 			t.Errorf("expected status %d, got %d", http.StatusNoContent, w.Code)
 		}
-		
+
 		// Verify it's gone
 		r2 := httptest.NewRequest(http.MethodGet, "/api/ingredients/1", nil)
 		r2.URL.Path = "/api/ingredients/1"
 		w2 := httptest.NewRecorder()
 		handler.GetIngredient(w2, r2)
-		
+
 		if w2.Code != http.StatusNotFound {
 			t.Error("ingredient should be deleted")
 		}
@@ -411,9 +411,9 @@ func TestDeleteIngredient(t *testing.T) {
 	t.Run("invalid method", func(t *testing.T) {
 		r := httptest.NewRequest(http.MethodGet, "/api/ingredients/1", nil)
 		w := httptest.NewRecorder()
-		
+
 		handler.DeleteIngredient(w, r)
-		
+
 		if w.Code != http.StatusMethodNotAllowed {
 			t.Errorf("expected status %d, got %d", http.StatusMethodNotAllowed, w.Code)
 		}
@@ -423,9 +423,9 @@ func TestDeleteIngredient(t *testing.T) {
 		r := httptest.NewRequest(http.MethodDelete, "/api/ingredients/invalid", nil)
 		r.URL.Path = "/api/ingredients/invalid"
 		w := httptest.NewRecorder()
-		
+
 		handler.DeleteIngredient(w, r)
-		
+
 		if w.Code != http.StatusBadRequest {
 			t.Errorf("expected status %d, got %d", http.StatusBadRequest, w.Code)
 		}
@@ -435,9 +435,9 @@ func TestDeleteIngredient(t *testing.T) {
 		r := httptest.NewRequest(http.MethodDelete, "/api/ingredients/999", nil)
 		r.URL.Path = "/api/ingredients/999"
 		w := httptest.NewRecorder()
-		
+
 		handler.DeleteIngredient(w, r)
-		
+
 		if w.Code != http.StatusNotFound {
 			t.Errorf("expected status %d, got %d", http.StatusNotFound, w.Code)
 		}
