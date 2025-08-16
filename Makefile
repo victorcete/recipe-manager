@@ -1,7 +1,14 @@
-.PHONY: build clean dev docker-build docker-run docker-run-bg docker-stop fmt lint test test-coverage test-coverage-detail test-coverage-html test-verbose
+.PHONY: build build-mcp build-server clean dev docker-build docker-run docker-run-bg docker-stop fmt lint test test-coverage test-coverage-detail test-coverage-html test-verbose
 
-# Build the project
-build:
+# Build everything (main target)
+build: build-server build-mcp
+
+# Build MCP server only
+build-mcp:
+	go build -o bin/mcp-server ./cmd/mcp
+
+# Build HTTP server only
+build-server:
 	go build -o bin/server ./cmd/server
 
 # Clean binaries and artifacts
