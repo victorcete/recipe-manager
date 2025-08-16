@@ -2,19 +2,19 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
-	"strings"
 
 	"learn-go/internal/storage"
 )
 
 // IngredientHandler handles HTTP requests for ingredients
 type IngredientHandler struct {
-	storage *storage.MemoryStorage
+	storage storage.IngredientStorage
 }
 
 // NewIngredientHandler creates a new ingredient handler
-func NewIngredientHandler(storage *storage.MemoryStorage) *IngredientHandler {
+func NewIngredientHandler(storage storage.IngredientStorage) *IngredientHandler {
 	return &IngredientHandler{
 		storage: storage,
 	}
@@ -38,16 +38,18 @@ func (h *IngredientHandler) CreateIngredient(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Validate the ingredient name
-	if strings.TrimSpace(req.Name) == "" {
-		http.Error(w, "Ingredient name cannot be empty", http.StatusBadRequest)
-		return
-	}
-
 	// Create the ingredient
 	ingredient, err := h.storage.Create(req.Name)
+
 	if err != nil {
-		http.Error(w, "Failed to create ingredient", http.StatusInternalServerError)
+		switch {
+		case errors.Is(err, storage.ErrIngredientNameExists):
+			http.Error(w, err.Error(), http.StatusConflict)
+		case errors.Is(err, storage.ErrIngredientNameCannotBeEmpty):
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		default:
+			http.Error(w, "failed to create ingredient", http.StatusInternalServerError)
+		}
 		return
 	}
 
