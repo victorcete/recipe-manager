@@ -1,4 +1,4 @@
-.PHONY: build clean dev fmt lint test test-coverage test-coverage-detail test-coverage-html test-verbose
+.PHONY: build clean dev docker-build docker-run docker-run-bg docker-stop fmt lint test test-coverage test-coverage-detail test-coverage-html test-verbose
 
 # Build the project
 build:
@@ -12,6 +12,23 @@ clean:
 # Start development server
 dev: build
 	./bin/server
+
+# Build Docker image
+docker-build:
+	docker build -t learn-go:latest .
+
+# Run Docker container
+docker-run:
+	docker run -p 8080:8080 learn-go:latest
+
+# Run Docker container in background
+docker-run-bg:
+	docker run -d -p 8080:8080 --name learn-go-container learn-go:latest
+
+# Stop and remove Docker container
+docker-stop:
+	docker stop learn-go-container || true
+	docker rm learn-go-container || true
 
 # Format the code
 fmt:
