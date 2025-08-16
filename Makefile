@@ -1,16 +1,29 @@
-.PHONY: build test test-verbose test-coverage test-coverage-detail test-coverage-html fmt clean dev
+.PHONY: build clean dev fmt lint test test-coverage test-coverage-detail test-coverage-html test-verbose
 
 # Build the project
 build:
 	go build -o bin/server ./cmd/server
 
+# Clean binaries and artifacts
+clean:
+	rm -rf bin/ coverage.out coverage.html
+	go clean
+
+# Start development server
+dev: build
+	./bin/server
+
+# Format the code
+fmt:
+	go fmt ./...
+
+# Lint the code
+lint:
+	golangci-lint run
+
 # Run tests
 test:
 	go test ./...
-
-# Run tests with verbose output
-test-verbose:
-	go test -v ./...
 
 # Run tests with coverage report
 test-coverage:
@@ -28,15 +41,6 @@ test-coverage-html:
 	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
 
-# Format the code
-fmt:
-	go fmt ./...
-
-# Clean binaries and artifacts
-clean:
-	rm -rf bin/ coverage.out coverage.html
-	go clean
-
-# Start development server
-dev: build
-	./bin/server
+# Run tests with verbose output
+test-verbose:
+	go test -v ./...

@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// Ingredient represents a cooking ingredient
+// Ingredient represents a cooking ingredient.
 type Ingredient struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
@@ -10,7 +10,7 @@ type Ingredient struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// NewIngredient creates a new ingredient
+// NewIngredient creates a new ingredient.
 func NewIngredient(id int, name string) *Ingredient {
 	now := time.Now()
 	return &Ingredient{

@@ -3,29 +3,30 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"learn-go/internal/storage"
 )
 
-// IngredientHandler handles HTTP requests for ingredients
+// IngredientHandler handles HTTP requests for ingredients.
 type IngredientHandler struct {
 	storage storage.IngredientStorage
 }
 
-// NewIngredientHandler creates a new ingredient handler
+// NewIngredientHandler creates a new ingredient handler.
 func NewIngredientHandler(storage storage.IngredientStorage) *IngredientHandler {
 	return &IngredientHandler{
 		storage: storage,
 	}
 }
 
-// CreateIngredientRequest represents the JSON payload for creating an ingredient
+// CreateIngredientRequest represents the JSON payload for creating an ingredient.
 type CreateIngredientRequest struct {
 	Name string `json:"name"`
 }
 
-// CreateIngredient handles POST /ingredients
+// CreateIngredient handles POST to /ingredients endpoint.
 func (h *IngredientHandler) CreateIngredient(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -56,5 +57,7 @@ func (h *IngredientHandler) CreateIngredient(w http.ResponseWriter, r *http.Requ
 	// Return the created ingredient as JSON
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(ingredient)
+	if err := json.NewEncoder(w).Encode(ingredient); err != nil {
+		log.Printf("failed to encode ingredient response: %v", err)
+	}
 }
