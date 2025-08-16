@@ -1,5 +1,6 @@
 # AI memory
 CLAUDE.md
+*.txt
 
 # Binaries for programs and plugins
 *.exe

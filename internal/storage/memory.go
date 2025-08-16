@@ -2,15 +2,27 @@ package storage
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 
 	"learn-go/internal/models"
 )
 
+const (
+	IngredientNameMaxLength = 48
+	IngredientNameMinLength = 3
+)
+
 var (
-	ErrIngredientNameCannotBeEmpty = errors.New("ingredient name cannot be empty")
-	ErrIngredientNameExists        = errors.New("ingredient name already exists")
+	ingredientNameRegex = regexp.MustCompile(`^[a-zA-Z0-9\s'\-À-ÿ]+$`)
+
+	ErrIngredientNameCannotBeEmpty        = errors.New("ingredient name cannot be empty")
+	ErrIngredientNameContainsInvalidChars = errors.New("ingredient name contains one or more invalid characters")
+	ErrIngredientNameExists               = errors.New("ingredient name already exists")
+	ErrIngredientNameIsTooLong            = fmt.Errorf("ingredient name cannot exceed %d characters long", IngredientNameMaxLength)
+	ErrIngredientNameIsTooShort           = fmt.Errorf("ingredient name must be at least %d characters long", IngredientNameMinLength)
 )
 
 // MemoryStorage provides in-memory storage for ingredients.
@@ -39,6 +51,18 @@ func (s *MemoryStorage) Create(name string) (*models.Ingredient, error) {
 		return nil, ErrIngredientNameCannotBeEmpty
 	}
 
+	if len(normalizedName) < IngredientNameMinLength {
+		return nil, ErrIngredientNameIsTooShort
+	}
+
+	if len(normalizedName) > IngredientNameMaxLength {
+		return nil, ErrIngredientNameIsTooLong
+	}
+
+	if !isValidIngredientName(normalizedName) {
+		return nil, ErrIngredientNameContainsInvalidChars
+	}
+
 	if s.IngredientNameExists(normalizedName) {
 		return nil, ErrIngredientNameExists
 	}
@@ -48,6 +72,18 @@ func (s *MemoryStorage) Create(name string) (*models.Ingredient, error) {
 	s.nextID++
 
 	return ingredient, nil
+}
+
+func (s *MemoryStorage) List() ([]*models.Ingredient, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	results := make([]*models.Ingredient, 0, len(s.ingredients))
+	for _, ingredient := range s.ingredients {
+		results = append(results, ingredient)
+	}
+
+	return results, nil
 }
 
 func (s *MemoryStorage) IngredientNameExists(name string) bool {
@@ -68,4 +104,8 @@ func normalizeIngredientName(name string) string {
 
 	// always return lowercased value
 	return strings.ToLower(normalized)
+}
+
+func isValidIngredientName(name string) bool {
+	return ingredientNameRegex.MatchString(name)
 }

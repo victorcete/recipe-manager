@@ -3,6 +3,9 @@ package models
 import "time"
 
 // Ingredient represents a cooking ingredient.
+// TODO: Add calories_per_100g field for nutritional tracking
+// TODO: Future - add protein, fat, carbs per 100g
+// TODO: Future - add unit conversion fields (piece_weight_grams, piece_name, density_g_per_ml)
 type Ingredient struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
