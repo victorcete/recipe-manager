@@ -14,13 +14,13 @@ import (
 )
 
 func main() {
-	// TODO: Add list_ingredients MCP tool
 	// TODO: Add update_ingredient MCP tool
 	// TODO: Add delete_ingredient MCP tool
 	// TODO: Future - add Recipe model and recipe management tools
 	// TODO: Future - add search_recipes_by_ingredient tool
 
 	ingredientStorage := storage.NewMemoryStorage()
+	ingredientStorage.SeedTestData()
 	mcpServer := server.NewMCPServer("ingredient-server", "0.1.0")
 
 	// Tools

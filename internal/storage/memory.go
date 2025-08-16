@@ -86,6 +86,71 @@ func (s *MemoryStorage) List() ([]*models.Ingredient, error) {
 	return results, nil
 }
 
+func (s *MemoryStorage) SeedTestData() ([]*models.Ingredient, error) {
+	testIngredients := []string{
+		"sal",
+		"pimienta negra",
+		"ajo en polvo",
+		"cebolla en polvo",
+		"pimentón",
+		"comino",
+		"orégano",
+		"albahaca seca",
+		"tomillo",
+		"romero",
+		"aceite de oliva",
+		"aceite vegetal",
+		"vinagre blanco",
+		"vinagre de manzana",
+		"vinagre balsámico",
+		"leche",
+		"mantequilla",
+		"queso parmesano",
+		"huevos",
+		"yogur natural",
+		"pollo",
+		"ternera",
+		"pescado blanco",
+		"atún en lata",
+		"judías",
+		"cebolla",
+		"ajo fresco",
+		"tomate",
+		"zanahoria",
+		"apio",
+		"pimiento",
+		"patata",
+		"limón",
+		"arroz",
+		"pasta",
+		"pan",
+		"harina",
+		"avena",
+		"azúcar",
+		"miel",
+		"salsa de soja",
+		"caldo de pollo",
+		"tomate triturado",
+		"mostaza",
+		"mahonesa",
+		"perejil",
+		"cilantro",
+		"albahaca fresca",
+		"levadura",
+		"bicarbonato sódico",
+	}
+	results := make([]*models.Ingredient, 0, len(testIngredients))
+
+	for _, ingredientName := range testIngredients {
+		ingredient, err := s.Create(ingredientName)
+		if err != nil {
+			continue
+		}
+		results = append(results, ingredient)
+	}
+	return results, nil
+}
+
 func (s *MemoryStorage) IngredientNameExists(name string) bool {
 	for _, ingredient := range s.ingredients {
 		if strings.EqualFold(ingredient.Name, name) {
