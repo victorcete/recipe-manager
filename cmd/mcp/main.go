@@ -14,9 +14,8 @@ import (
 )
 
 func main() {
-	// TODO: Add delete_ingredient MCP tool
-	// TODO: Future - add Recipe model and recipe management tools
-	// TODO: Future - add search_recipes_by_ingredient tool
+	// TODO: add Recipe model and recipe management tools
+	// TODO: add search_recipes_by_ingredient tool
 
 	ingredientStorage := storage.NewMemoryStorage()
 	ingredientStorage.SeedTestData()

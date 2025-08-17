@@ -7,14 +7,14 @@ COPY go.sum* ./
 RUN go mod download
 
 COPY . .
-RUN go build -o bin/server ./cmd/server
+RUN go build -o bin/mcp-server ./cmd/mcp
 
 # Final stage
 FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 WORKDIR /root/
 
-COPY --from=builder /app/bin/server .
+COPY --from=builder /app/bin/mcp-server .
 
-EXPOSE 8080
-CMD ["./server"]
+# MCP servers communicate via stdio, not HTTP ports
+CMD ["./mcp-server"]

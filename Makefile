@@ -1,70 +1,36 @@
-.PHONY: build build-mcp build-server clean dev docker-build docker-run docker-run-bg docker-stop fmt lint test test-coverage test-coverage-detail test-coverage-html test-verbose
+.PHONY: build clean dev fmt lint test test-coverage test-coverage-detail test-coverage-html test-verbose
 
-# Build everything (main target)
-build: build-server build-mcp
-
-# Build MCP server only
-build-mcp:
+build:
 	go build -o bin/mcp-server ./cmd/mcp
 
-# Build HTTP server only
-build-server:
-	go build -o bin/server ./cmd/server
-
-# Clean binaries and artifacts
 clean:
 	rm -rf bin/ coverage.out coverage.html
 	go clean
 
-# Start development server
 dev: build
-	./bin/server
+	./bin/mcp-server
 
-# Build Docker image
-docker-build:
-	docker build -t github.com/victorcete/recipe-manager:latest .
-
-# Run Docker container
-docker-run:
-	docker run -p 8080:8080 github.com/victorcete/recipe-manager:latest
-
-# Run Docker container in background
-docker-run-bg:
-	docker run -d -p 8080:8080 --name github.com/victorcete/recipe-manager-container github.com/victorcete/recipe-manager:latest
-
-# Stop and remove Docker container
-docker-stop:
-	docker stop github.com/victorcete/recipe-manager-container || true
-	docker rm github.com/victorcete/recipe-manager-container || true
-
-# Format the code
 fmt:
 	go fmt ./...
 
-# Lint the code
 lint:
 	golangci-lint run
 
-# Run tests
 test:
 	go test ./...
 
-# Run tests with coverage report
 test-coverage:
 	go test -cover ./...
 
-# Run tests with detailed coverage breakdown by function
 test-coverage-detail:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -func=coverage.out
 	@rm coverage.out
 
-# Run tests with detailed coverage report and generate HTML
 test-coverage-html:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out -o coverage.html
 	@echo "Coverage report generated: coverage.html"
 
-# Run tests with verbose output
 test-verbose:
 	go test -v ./...
