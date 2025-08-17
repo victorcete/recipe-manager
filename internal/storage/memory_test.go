@@ -2,6 +2,7 @@ package storage
 
 import (
 	"testing"
+	"time"
 )
 
 func TestNewMemoryStorage(t *testing.T) {
@@ -162,6 +163,91 @@ func TestCreateIngredient(t *testing.T) {
 					}
 				}
 			})
+		}
+	})
+}
+
+func TestUpdateIngredient(t *testing.T) {
+	t.Run("successful update", func(t *testing.T) {
+		storage := NewMemoryStorage()
+
+		originalName := "tomato"
+		storage.Create(originalName)
+		newName := "potato"
+
+		time.Sleep(5 * time.Millisecond)
+
+		ingredient, err := storage.Update(originalName, newName)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if ingredient.Name != newName {
+			t.Errorf("expected name %q, got %q", ingredient.Name, newName)
+		}
+		if !ingredient.UpdatedAt.After(ingredient.CreatedAt) {
+			t.Errorf("UpdatedAt should be after CreatedAt")
+		}
+	})
+
+	t.Run("ingredient not found", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		storage.Create("tomato")
+
+		_, err := storage.Update("brotato", "potato")
+		if err != ErrIngredientNotFound {
+			t.Errorf("expected %v, got %v", ErrIngredientNotFound, err)
+		}
+	})
+
+	t.Run("validation errors", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		originalName := "tomato"
+		storage.Create(originalName)
+
+		_, err := storage.Update(originalName, "tomato")
+		if err != ErrIngredientNameExists {
+			t.Errorf("expected %v, got %v", ErrIngredientNameExists, err)
+		}
+
+		_, err = storage.Update(originalName, " tomato ")
+		if err != ErrIngredientNameExists {
+			t.Errorf("expected %v, got %v", ErrIngredientNameExists, err)
+		}
+
+		_, err = storage.Update(originalName, "ToMaTo   ")
+		if err != ErrIngredientNameExists {
+			t.Errorf("expected %v, got %v", ErrIngredientNameExists, err)
+		}
+
+		_, err = storage.Update(originalName, "")
+		if err != ErrIngredientNameCannotBeEmpty {
+			t.Errorf("expected %v, got %v", ErrIngredientNameCannotBeEmpty, err)
+		}
+
+		_, err = storage.Update(originalName, "a")
+		if err != ErrIngredientNameIsTooShort {
+			t.Errorf("expected %v, got %v", ErrIngredientNameIsTooShort, err)
+		}
+
+		_, err = storage.Update(originalName, "Super-Ultra-Mega-Long-Ingredient-Name-That-Goes-On-Forever")
+		if err != ErrIngredientNameIsTooLong {
+			t.Errorf("expected %v, got %v", ErrIngredientNameIsTooLong, err)
+		}
+
+		_, err = storage.Update(originalName, "<!!tomato>")
+		if err != ErrIngredientNameContainsInvalidChars {
+			t.Errorf("expected %v, got %v", ErrIngredientNameContainsInvalidChars, err)
+		}
+	})
+
+	t.Run("updating a different existing ingredient name", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		storage.Create("tomato")
+		storage.Create("basil")
+
+		_, err := storage.Update("tomato", "basil")
+		if err != ErrIngredientNameExists {
+			t.Errorf("expected %v, got %v", ErrIngredientNameExists, err)
 		}
 	})
 }
