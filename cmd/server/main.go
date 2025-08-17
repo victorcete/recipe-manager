@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"learn-go/internal/handlers"
-	"learn-go/internal/storage"
+	"github.com/victorcete/recipe-manager/internal/handlers"
+	"github.com/victorcete/recipe-manager/internal/storage"
 )
 
 func main() {

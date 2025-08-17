@@ -3,11 +3,12 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"learn-go/internal/storage"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/victorcete/recipe-manager/internal/storage"
 )
 
 func TestCreateIngredient(t *testing.T) {

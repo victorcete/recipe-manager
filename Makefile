@@ -22,20 +22,20 @@ dev: build
 
 # Build Docker image
 docker-build:
-	docker build -t learn-go:latest .
+	docker build -t github.com/victorcete/recipe-manager:latest .
 
 # Run Docker container
 docker-run:
-	docker run -p 8080:8080 learn-go:latest
+	docker run -p 8080:8080 github.com/victorcete/recipe-manager:latest
 
 # Run Docker container in background
 docker-run-bg:
-	docker run -d -p 8080:8080 --name learn-go-container learn-go:latest
+	docker run -d -p 8080:8080 --name github.com/victorcete/recipe-manager-container github.com/victorcete/recipe-manager:latest
 
 # Stop and remove Docker container
 docker-stop:
-	docker stop learn-go-container || true
-	docker rm learn-go-container || true
+	docker stop github.com/victorcete/recipe-manager-container || true
+	docker rm github.com/victorcete/recipe-manager-container || true
 
 # Format the code
 fmt:

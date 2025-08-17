@@ -10,7 +10,7 @@ import (
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 
-	"learn-go/internal/storage"
+	"github.com/victorcete/recipe-manager/internal/storage"
 )
 
 func main() {
@@ -28,6 +28,14 @@ func main() {
 		mcp.WithString("name",
 			mcp.Required(),
 			mcp.Description("Name of the single ingredient to add (e.g., 'tomato', 'salt', 'chicken breast')"),
+		),
+	)
+
+	deleteIngredientTool := mcp.NewTool("delete_ingredient",
+		mcp.WithDescription("Delete exactly one ingredient from your collection. Call this tool separately for each ingredient you want to delete. Do not try to delete multiple ingredients in a single call."),
+		mcp.WithString("name",
+			mcp.Required(),
+			mcp.Description("Name of the single ingredient to delete (e.g., 'tomato', 'salt', 'chicken breast')"),
 		),
 	)
 
@@ -73,6 +81,35 @@ func main() {
 		}
 
 		successMsg := fmt.Sprintf("✅ Added %s to your ingredients", ingredient.Name)
+		return mcp.NewToolResultText(successMsg), nil
+	})
+
+	mcpServer.AddTool(deleteIngredientTool, func(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		name, err := request.RequireString("name")
+		if err != nil {
+			return mcp.NewToolResultText(fmt.Sprintf("❌ Error: %v", err)), nil
+		}
+
+		err = ingredientStorage.Delete(name)
+		if err != nil {
+			var errorMsg string
+			switch err {
+			// user-friendly storage errors.
+			case storage.ErrIngredientNameCannotBeEmpty,
+				storage.ErrIngredientNameContainsInvalidChars,
+				storage.ErrIngredientNotFound,
+				storage.ErrIngredientNameIsTooShort,
+				storage.ErrIngredientNameIsTooLong,
+				storage.ErrIngredientNameExists:
+				errorMsg = "❌ Error: " + err.Error()
+			// default catch for database or system errors, etc.
+			default:
+				errorMsg = "❌ Error: Failed to delete ingredient"
+			}
+			return mcp.NewToolResultText(errorMsg), nil
+		}
+
+		successMsg := fmt.Sprintf("✅ Deleted %s from your ingredients", name)
 		return mcp.NewToolResultText(successMsg), nil
 	})
 

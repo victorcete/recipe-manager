@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"learn-go/internal/models"
+	"github.com/victorcete/recipe-manager/internal/models"
 )
 
 const (
@@ -63,6 +63,32 @@ func (s *MemoryStorage) Create(name string) (*models.Ingredient, error) {
 	return ingredient, nil
 }
 
+func (s *MemoryStorage) Delete(name string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	normalizedName, err := s.validateIngredientName(name)
+	if err != nil {
+		return err
+	}
+
+	var targetIngredient *models.Ingredient
+	for _, ingredient := range s.ingredients {
+		if strings.EqualFold(ingredient.Name, normalizedName) {
+			targetIngredient = ingredient
+			break
+		}
+	}
+
+	if targetIngredient == nil {
+		return ErrIngredientNotFound
+	}
+
+	delete(s.ingredients, targetIngredient.ID)
+
+	return nil
+}
+
 func (s *MemoryStorage) List() ([]*models.Ingredient, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -79,9 +105,20 @@ func (s *MemoryStorage) Update(name, newName string) (*models.Ingredient, error)
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	// normalize both inputs early
+	normalizedName, err := s.validateIngredientName(name)
+	if err != nil {
+		return nil, err
+	}
+
+	normalizedNewName, err := s.validateIngredientName(newName)
+	if err != nil {
+		return nil, err
+	}
+
 	var targetIngredient *models.Ingredient
 	for _, ingredient := range s.ingredients {
-		if strings.EqualFold(ingredient.Name, name) {
+		if strings.EqualFold(ingredient.Name, normalizedName) {
 			targetIngredient = ingredient
 			break
 		}
@@ -91,16 +128,11 @@ func (s *MemoryStorage) Update(name, newName string) (*models.Ingredient, error)
 		return nil, ErrIngredientNotFound
 	}
 
-	normalizedName, err := s.validateIngredientName(newName)
-	if err != nil {
-		return nil, err
-	}
-
-	if s.IngredientNameExists(normalizedName) {
+	if s.IngredientNameExists(normalizedNewName) {
 		return nil, ErrIngredientNameExists
 	}
 
-	targetIngredient.Name = normalizedName
+	targetIngredient.Name = normalizedNewName
 	targetIngredient.UpdatedAt = time.Now()
 
 	return targetIngredient, nil
@@ -169,15 +201,6 @@ func (s *MemoryStorage) SeedTestData() ([]*models.Ingredient, error) {
 		results = append(results, ingredient)
 	}
 	return results, nil
-}
-
-func (s *MemoryStorage) IngredientIDExists(id int) bool {
-	for _, ingredient := range s.ingredients {
-		if ingredient.ID == id {
-			return true
-		}
-	}
-	return false
 }
 
 func (s *MemoryStorage) IngredientNameExists(name string) bool {

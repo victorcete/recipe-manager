@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"learn-go/internal/storage"
+	"github.com/victorcete/recipe-manager/internal/storage"
 )
 
 // IngredientHandler handles HTTP requests for ingredients.

@@ -167,6 +167,87 @@ func TestCreateIngredient(t *testing.T) {
 	})
 }
 
+func TestDeleteIngredient(t *testing.T) {
+	t.Run("successful single delete", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		storage.Create("tomato")
+
+		err := storage.Delete("tomato")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		ingredients, _ := storage.List()
+		for _, ingredient := range ingredients {
+			if ingredient.Name == "tomato" {
+				t.Errorf("tomato should have been deleted but was still found")
+			}
+		}
+	})
+
+	t.Run("successful multiple deletion", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		storage.Create("tomato")
+		storage.Create("basil")
+
+		err := storage.Delete("tomato")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		err = storage.Delete("basil")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		ingredients, _ := storage.List()
+		for _, ingredient := range ingredients {
+			if ingredient.Name == "tomato" {
+				t.Errorf("tomato should have been deleted but was still found")
+			}
+		}
+		for _, ingredient := range ingredients {
+			if ingredient.Name == "basil" {
+				t.Errorf("basil should have been deleted but was still found")
+			}
+		}
+	})
+
+	t.Run("case insensitive delete", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		storage.Create("tomato")
+
+		err := storage.Delete("  TOMATO ")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		ingredients, _ := storage.List()
+		for _, ingredient := range ingredients {
+			if ingredient.Name == "tomato" {
+				t.Errorf("tomato should have been deleted but was still found")
+			}
+		}
+	})
+
+	t.Run("ingredient not found", func(t *testing.T) {
+		storage := NewMemoryStorage()
+		storage.Create("tomato")
+
+		err := storage.Delete("brotato")
+		if err != ErrIngredientNotFound {
+			t.Errorf("expected %v, got %v", ErrIngredientNotFound, err)
+		}
+	})
+
+	t.Run("delete from empty storage", func(t *testing.T) {
+		storage := NewMemoryStorage()
+
+		err := storage.Delete("brotato")
+		if err != ErrIngredientNotFound {
+			t.Errorf("expected %v, got %v", ErrIngredientNotFound, err)
+		}
+	})
+}
+
 func TestUpdateIngredient(t *testing.T) {
 	t.Run("successful update", func(t *testing.T) {
 		storage := NewMemoryStorage()
